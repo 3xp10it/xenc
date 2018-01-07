@@ -11,9 +11,9 @@ xenc可用于在移动端app有加密数据情况下的安全测试,支持非对
 
 **1.get或post请求中的部分参数值被加密**
 
-``` 
 注意:这里如果有多个参数值被加密则在运行python3 xenc.py后设置待加密的query string时直接以'&'连接多个参数即可,如下面的query string可设置成mobilePhone=&b=,如果有初始值最好设置query string包含初始值,如下面的情况将query string设置成'mobilePhone=17832238764&b=1'
 
+``` 
 example:
 
 POST /index.php HTTP/1.1 
@@ -31,8 +31,9 @@ mobilePhone=Nns7415cyOT0FkzwbjiXmahxvFt6tfw1Dda8pg%2bWLBhjowZ1Y&id=1&a=2&b=tfw1D
 
 **2.整个post请求的data部分被加密**
 
-```
 注意:这里认为post的整个data部分被加密前没有"部分参数值被加密"的情况
+
+```
 example:
 
 POST /index.php HTTP/1.1 
