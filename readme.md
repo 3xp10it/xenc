@@ -9,7 +9,7 @@
 
 xenc可用于在移动端app有加密数据情况下的安全测试,支持非对称加密,支持以下2种情况的加密情况:
 
-get或post请求中的部分参数值被加密
+**1.get或post请求中的部分参数值被加密**
 
 ``` 
 example:
@@ -27,7 +27,7 @@ mobilePhone=Nns7415cyOT0FkzwbjiXmahxvFt6tfw1Dda8pg%2bWLBhjowZ1Y&id=1&a=2
 ```
 
 
-整个post请求的data部分被加密
+**2.整个post请求的data部分被加密**
 
 ```
 注意:这里认为post的整个data部分被加密前没有"部分参数值被加密"的情况
