@@ -1,26 +1,31 @@
-
-## xenc
+# xenc
 
 ### Disclaimer
 
 [!] legal disclaimer: Usage of xenc.py for attacking targets without prior mutual consent is illegal.It is the end user's responsibility to obey all applicable local, state and federal laws.Developers assume no liability and are not responsible for any misuse or damage caused by this program.
 
+### Usage
+
+**`python3 xenc.py`**
+
+运行`python3 xenc.py`后要求安全人员提供一个包含rpc加密函数的frida的**js文件**和一个**request请求**
+
 ### About
 
 xenc可用于在移动端app有加密数据情况下的安全测试,支持非对称加密,支持以下2种情况的加密情况:
 
-**1.get或post请求中的部分参数值被加密**
+#### 0x1 get或post请求中的部分参数值被加密
 
-这里如果有多个参数值被加密则在运行python3 xenc.py后设置待加密的query string时直接以'&'连接多个参数即可,如下面的query string可设置成`mobilePhone=&b=`,如果有初始值最好设置query string包含初始值,如下面的情况将query string设置成`mobilePhone=17832238764&b=1`
+如下示例,其中mobilePhone和b两个参数被加密
 
 ``` 
 example:
 
 POST /index.php HTTP/1.1 
-Host: 192.168.1.1 
+Host: www.baidu.com:443
 Connection: close 
 Accept: */* 
-User-Agent: PALifeApp/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
+User-Agent: PALxxx/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
 Accept-Language: zh-Hans-CN;q=1 X-Tingyun-Id: s8-utloiNb8;c=2;r=736688779 
 Content-Type: application/x-www-form-urlencoded 
 Content-Length: 993
@@ -28,41 +33,15 @@ Content-Length: 993
 mobilePhone=Nns7415cyOT0FkzwbjiXmahxvFt6tfw1Dda8pg%2bWLBhjowZ1Y&id=1&a=2&b=tfw1Dda8pg%2bWLBhj
 ```
 
+**js文件**
 
-**2.整个post请求的data部分被加密**
-
-这里认为post的整个data部分被加密前没有"部分参数值被加密"的情况
-
-```
-example:
-
-POST /index.php HTTP/1.1 
-Host: 192.168.1.1 
-Connection: close 
-Accept: */* 
-User-Agent: PALifeApp/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
-Accept-Language: zh-Hans-CN;q=1 X-Tingyun-Id: s8-utloiNb8;c=2;r=736688779 
-Content-Type: application/x-www-form-urlencoded 
-Content-Length: 993
-
-Salted__\kÏ�D<ÜñCHÁ*'-»84}_9Óûûî#¼²åûÅ8<V«àLÎÃ¾ÐµÄ\ôÇDßç	·¨S¢À/-¢Å5¦0/B0^!{ÌÚ"³¨màK7µeª¡öê
-```
-
-### 用法
-
-**`python3 xenc.py`**
-
-运行后要求提供包含rpc加密函数的frida的**js文件**和一个**request文件**
-
-#### js文件
-
-js文件为包含frida的rpc函数的js文件,其中的rpc函数为加密函数,用来给需要加密的字符串进行加密,安全人员需要编写包含加密函数的js文件,下面是一个示例,其中包含`encrypt`和`add`两个加密函数:
+需要安全人员找到需要加密的参数在app中对应的加密函数(如上面example包中需要找到mobilePhone和b这两个参数的加密函数),然后安全人员需要编写包含加密函数的js文件,下面是一个示例,其中包含`encrypt1`和`add`两个加密函数(**注意,rpc的参数名不能有大写字母和下划线**):
 
 ```
 'use strict';
 
 rpc.exports = {
-    encrypt: function (plain) {
+    encrypt1: function (plain) {
         var result=ObjC.classes.PARSCryptDataUtils.encryptWithServerTimestamp_(plain)
         return result.toString()
     },
@@ -73,55 +52,78 @@ rpc.exports = {
 
 ```
 
-#### request文件
+**request请求**
 
-request文件为未加密的请求包,2种不同加密情况下的请求包略有区别,具体如下:
-
-`get或post请求中的部分参数值被加密`情况下的request示例文件
+request请求要求是一个加密参数的值为未加密值的请求,可设置加密参数的值为空或一个初始值(更好),要求对request包中的Host字段修改为`127.0.0.1:8888`,并在Host字段的下一行加一个字段`Real-Host`,并将它的内容设置为真正的服务器地址(domain/ip+port格式),然后可通过burpsuite的repeater来发包,并右键通过burpsuite来测试有无漏洞.例如上面的example包对应的需要在burpsuite中发的包的内容如下:
 
 ```
 POST /index.php HTTP/1.1 
-Host: 192.168.1.1 
+Host: 127.0.0.1:8888
+Real-Host: www.baidu.com:443
 Connection: close 
 Accept: */* 
-User-Agent: PALifeApp/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
+User-Agent: PALxxx/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
 Accept-Language: zh-Hans-CN;q=1 X-Tingyun-Id: s8-utloiNb8;c=2;r=736688779 
 Content-Type: application/x-www-form-urlencoded 
 Content-Length: 993
 
-mobilePhone=Nns7415cyOT0FkzwbjiXmahxvFt6tfw1Dda8pg%2bWLBhjowZ1Y&id=1&a=2
+mobilePhone=18765452345&id=1&a=2&b=1
 
-或者其中的被加密的参数mobilePhone的值使用加密前的值也可
+```
+
+#### 0x2 整个post请求的data部分被加密
+
+如下示例,其中整个data内容被加密,这里认为post的整个data部分被加密前没有"部分参数值被加密"的情况
+
+```
+example:
 
 POST /index.php HTTP/1.1 
-Host: 192.168.1.1 
+Host: www.baidu.com:443
 Connection: close 
 Accept: */* 
-User-Agent: PALifeApp/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
+User-Agent: PALxxx/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
 Accept-Language: zh-Hans-CN;q=1 X-Tingyun-Id: s8-utloiNb8;c=2;r=736688779 
 Content-Type: application/x-www-form-urlencoded 
 Content-Length: 993
 
-mobilePhone=17723458764&id=1&a=2
+Salted__\kÏ�D<ÜñCHÁ*'-»84}_9Óûûî#¼²åûÅ
 ```
 
-`整个post请求的data部分被加密`情况下的request示例文件
+
+**js文件**
+
+这里假设加密函数的参数是整个request内容(包含header和data的post请求的明文内容),且加密函数只对data部分进行加密,header部分不加密.下面是一个示例,其中包含`encrypt2`和`sub`两个加密函数(**注意,rpc的参数名不能有大写字母和下划线**):
 
 ```
-其中整个post请求中的data部分要是未加密的数据
+'use strict';
 
+rpc.exports = {
+    encrypt2: function (plain) {
+        var result=ObjC.classes.PAREncryptor.encryptHttpRequest_(plain)
+        return result.toString()
+    },
+    sub: function (a, b) {
+            return a - b;
+        }
+};
+
+```
+
+**request请求**
+
+request请求要求是一个data部分未加密的请求,需人工通过hook找出加密前的整个data的内容,要求将request包中的Host字段修改为`127.0.0.1:8888`,并在Host字段的下一行加一个字段`Real-Host`,并将它的内容设置为真正的服务器地址(domain/ip+port格式),然后可通过burpsuite的repeater来发包,并右键通过burpsuite来测试有无漏洞.例如上面的example包对应的需要在burpsuite中发的包的内容如下:
+
+```
 POST /index.php HTTP/1.1 
-Host: 192.168.1.1 
+Host: 127.0.0.1:8888
+Real-Host: www.baidu.com:443
 Connection: close 
 Accept: */* 
-User-Agent: PALifeApp/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
+User-Agent: PALxxx/4.11.0 (iPhone; iOS9.0; Scale/2.00) 
 Accept-Language: zh-Hans-CN;q=1 X-Tingyun-Id: s8-utloiNb8;c=2;r=736688779 
 Content-Type: application/x-www-form-urlencoded 
 Content-Length: 993
 
-page=1&name=Bob
+page=1&no=2&year=3
 ```
-
-### 原理
-
-xenc.py将在`5000`端口(flask默认web端口)进行监听,xenc.py相当于一个转发器,用于将安全测试人员发送到xenc.py的request包进行适当的加密后再转发到真正的服务器,安全人员只需要对未加密前的数据进行测试,测试的host是127.0.0.1,运行`python3 xenc.py`后将以红色字体打印出需要测试的新的request包,可将这个红色的request包用于sqlmap或burpsuite等工具进行测试.
