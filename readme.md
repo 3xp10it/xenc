@@ -35,7 +35,7 @@ mobilePhone=Nns7415cyOT0FkzwbjiXmahxvFt6tfw1Dda8pg%2bWLBhjowZ1Y&id=1&a=2&b=tfw1D
 
 **js文件**
 
-需要安全人员找到需要加密的参数在app中对应的加密函数(如上面example包中需要找到mobilePhone和b这两个参数的加密函数),然后安全人员需要编写包含加密函数的js文件,下面是一个示例,其中包含`encrypt1`和`add`两个加密函数(**注意,rpc的参数名不能有大写字母和下划线**):
+需要安全人员找到需要加密的参数在app中对应的加密函数(如上面example包中需要找到mobilePhone和b这两个参数的加密函数),然后安全人员需要编写包含加密函数的js文件,下面是一个示例,其中包含`encrypt1`和`add`两个加密函数:
 
 ```
 'use strict';
@@ -93,7 +93,7 @@ Salted__\kÏ�D<ÜñCHÁ*'-»84}_9Óûûî#¼²åûÅ
 
 **js文件**
 
-这里假设加密函数的参数是整个request内容(包含header和data的post请求的明文内容),且加密函数只对data部分进行加密,header部分不加密.下面是一个示例,其中包含`encrypt2`和`sub`两个加密函数(**注意,rpc的参数名不能有大写字母和下划线**):
+这里假设加密函数的参数是整个request内容(包含header和data的post请求的明文内容),且加密函数只对data部分进行加密,header部分不加密.下面是一个示例,其中包含`encrypt2`和`sub`两个加密函数:
 
 ```
 'use strict';
@@ -127,3 +127,9 @@ Content-Length: 993
 
 page=1&no=2&year=3
 ```
+
+### 注意
+
++ rpc的参数名不能有大写字母和下划线
++ 使用xenc.py期间手机不要黑屏且app要保证在前台不能在后台运行
+
