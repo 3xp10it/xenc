@@ -8,7 +8,7 @@
 
 **`python3 xenc.py`**
 
-运行`python3 xenc.py`后要求安全人员提供一个包含rpc加密函数的frida的**js文件**和一个**request请求**
+运行`python3 xenc.py`中要求安全人员提供一个包含rpc加密函数的frida的**js文件**,运行完后要求提供一个**request请求**,可从burpsuite的repeater中通过`Go`提供
 
 ### About
 
